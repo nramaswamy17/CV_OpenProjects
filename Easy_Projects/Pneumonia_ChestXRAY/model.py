@@ -1,6 +1,7 @@
 # scripts/model.py
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as models
 
 class SimpleCNN(nn.Module):
     def __init__(self):

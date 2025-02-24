@@ -3,15 +3,32 @@ import torch
 import torch.optim as optim
 from model import SimpleCNN
 from data_loader import train_loader, val_loader
+from data_loader import train_dataset # For class weight calculation
 import config
 import torch.nn as nn
+from collections import Counter
 
 # Set device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+## apply class weights to loss function
+# Calculate the number of samples per class
+class_counts = Counter(train_dataset.targets)
+N_normal = class_counts[0]  # Assuming class 0 is 'Normal'
+N_pneumonia = class_counts[1]  # Assuming class 1 is 'Pneumonia'
+N_total = len(train_dataset)
+
+# Calculate class weights: weight_class = N_total / (2 * N_class)
+weight_normal = N_total / (2.0 * N_normal)
+weight_pneumonia = N_total / (2.0 * N_pneumonia)
+
+# Create a tensor of class weights
+class_weights = torch.tensor([weight_normal, weight_pneumonia], dtype=torch.float32).to(device)
+## End class weights application
+
 # Initialize model, loss, and optimizer
 model = SimpleCNN().to(device)
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(weight=class_weights)
 optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
 
 # Training loop

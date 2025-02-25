@@ -477,4 +477,118 @@ The results do not support an improvement over the previous experiment. It may b
 
 >>> Note: Test at higher epochs
 
-### Trying new architectures
+## Trying new architectures
+
+### ResNet18
+
+#### Code Adjustments
+Add the following to the model.py script
+```
+def ResNet18():
+    # Load pre-trained resnet model
+    model = models.resnet18(pretrained=True)
+
+    # modify first conv layer to take grayscale images
+    model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
+    # Adjust the final layer for binary classification (Normal vs Pneumonia)
+    num_features = model.fc.in_features
+    model.fc = nn.Linear(num_features, 2)
+
+    # Set model to only train the final layer
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.fc.parameters():
+        param.requires_grad = True  # Train only the final layer
+
+    return model
+```
+
+And the following to train.py:
+```
+# Initialize model, loss, and optimizer
+if model_type == "easy_CNN":
+    model = SimpleCNN().to(device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
+elif model_type == 'ResNet18':
+    model = ResNet18().to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
+```
+
+And to evaluate.py
+```
+# Load the trained model
+if config.MODEL == 'ResNet18':
+    model = ResNet18().to(device)
+elif config.MODEL == 'easy_CNN':
+    model = SimpleCNN().to(device)
+```
+
+And to config.py
+```
+MODEL = "ResNet18"
+```
+
+#### Results
+```
+              precision    recall  f1-score   support
+
+      Normal       0.88      0.54      0.67       234
+   Pneumonia       0.78      0.96      0.86       390
+
+    accuracy                           0.80       624
+   macro avg       0.83      0.75      0.76       624
+weighted avg       0.82      0.80      0.79       624
+```
+Pretty much no improvement seen...why? 
+
+1. Limited Training - ResNet18 is a larger model and therefore will likely require more time to reach convergence than a smaller model (like SimpleCNN)
+2. Pre-training effect - Because ResNet18 was trained on the ImageNet dataset, it may require some time to adapt to the new dataset on medical images.
+3. ResNet18 just isn't that good - perhaps ResNet18 cannot find any more features than SimpleCNN could. 
+
+#### Limited Training
+I ran ResNet18 for 5 epochs, here's the result:
+```
+              precision    recall  f1-score   support
+
+      Normal       0.89      0.65      0.75       234
+   Pneumonia       0.82      0.95      0.88       390
+
+    accuracy                           0.84       624
+   macro avg       0.86      0.80      0.82       624
+weighted avg       0.85      0.84      0.83       624
+```
+1. ResNet18 after 5 Epochs vs ResNet18 after 1 Epoch
+    - Normal Class
+        - Precision (.88 -> .89)
+        - Recall (.54 -> .65)
+        - F1 (.67 -> .75)
+    - Pneumonia Class
+        - Precision (.78 -> .82)
+        - Recall (.96 -> .95)
+        - F1 (.86 -> .88)
+    - Overall Metrics 
+        - Accuracy (.80 -> .84)
+        - Macro avg F1 (.76 -> .82)
+        - Weighted F1 (.79 -> 83)`
+
+Pretty clear improvement in all aspects of this model. particular improvement noted to Recall improvement on Normal class. Clearly, more epochs on the ResNet18 suggests undertraining at 1 epoch. Conversely, the SimpleCNN model did not have such an issue. 
+
+2. ResNet18 after 5 Epochs vs SimpleCNN after 5 epochs
+Foramt is (SimpleCNN -> ResNet18)
+    - Normal Class
+        - Precision (.89 -> .89)
+        - Recall (.37 -> .65)
+        - F1 (.52 -> .75)
+    - Pneumonia Class
+        - Precision (.72 -> .82)
+        - Recall (.97 -> .95)
+        - F1 (.83 -> .88)
+    - Overall Metrics 
+        - Accuracy (.75 -> .84)
+        - Macro avg F1 (.68 -> .82)
+        - Weighted F1 (.71 -> .83)`
+
+Remarkable Improvement from SimpleCNN to ResNet18!!

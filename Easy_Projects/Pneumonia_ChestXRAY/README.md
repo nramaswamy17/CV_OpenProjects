@@ -560,3 +560,35 @@ I ran ResNet18 for 5 epochs, here's the result:
    macro avg       0.86      0.80      0.82       624
 weighted avg       0.85      0.84      0.83       624
 ```
+1. ResNet18 after 5 Epochs vs ResNet18 after 1 Epoch
+    - Normal Class
+        - Precision (.88 -> .89)
+        - Recall (.54 -> .65)
+        - F1 (.67 -> .75)
+    - Pneumonia Class
+        - Precision (.78 -> .82)
+        - Recall (.96 -> .95)
+        - F1 (.86 -> .88)
+    - Overall Metrics 
+        - Accuracy (.80 -> .84)
+        - Macro avg F1 (.76 -> .82)
+        - Weighted F1 (.79 -> 83)`
+
+Pretty clear improvement in all aspects of this model. particular improvement noted to Recall improvement on Normal class. Clearly, more epochs on the ResNet18 suggests undertraining at 1 epoch. Conversely, the SimpleCNN model did not have such an issue. 
+
+2. ResNet18 after 5 Epochs vs SimpleCNN after 5 epochs
+Foramt is (SimpleCNN -> ResNet18)
+    - Normal Class
+        - Precision (.89 -> .89)
+        - Recall (.37 -> .65)
+        - F1 (.52 -> .75)
+    - Pneumonia Class
+        - Precision (.72 -> .82)
+        - Recall (.97 -> .95)
+        - F1 (.83 -> .88)
+    - Overall Metrics 
+        - Accuracy (.75 -> .84)
+        - Macro avg F1 (.68 -> .82)
+        - Weighted F1 (.71 -> .83)`
+
+Remarkable Improvement from SimpleCNN to ResNet18!!

@@ -1,6 +1,6 @@
 # scripts/evaluate.py
 import torch
-from model import SimpleCNN
+from model import SimpleCNN, ResNet18
 from data_loader import test_loader
 from sklearn.metrics import classification_report
 import config
@@ -9,7 +9,10 @@ import config
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Load the trained model
-model = SimpleCNN().to(device)
+if config.MODEL == 'ResNet18':
+    model = ResNet18().to(device)
+elif config.MODEL == 'easy_CNN':
+    model = SimpleCNN().to(device)
 model.load_state_dict(torch.load(f'{config.MODEL_SAVE_PATH}/simple_cnn.pth'))
 model.eval()
 

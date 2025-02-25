@@ -19,3 +19,23 @@ class SimpleCNN(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+    
+
+def ResNet18():
+    # Load pre-trained resnet model
+    model = models.resnet18(pretrained=True)
+
+    # modify first conv layer to take grayscale images
+    model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+
+    # Adjust the final layer for binary classification (Normal vs Pneumonia)
+    num_features = model.fc.in_features
+    model.fc = nn.Linear(num_features, 2)
+
+    # Set model to only train the final layer
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.fc.parameters():
+        param.requires_grad = True  # Train only the final layer
+
+    return model

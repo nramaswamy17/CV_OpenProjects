@@ -3,4 +3,5 @@ DATA_PATH = "/Users/Neal/Documents/Projects/CV_OpenProjects/Easy_Projects/Pneumo
 MODEL_SAVE_PATH = 'models'
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
-NUM_EPOCHS = 1
+NUM_EPOCHS = 5
+MODEL = "ResNet18"

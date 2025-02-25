@@ -1,7 +1,7 @@
 # scripts/train.py
 import torch
 import torch.optim as optim
-from model import SimpleCNN
+from model import SimpleCNN, ResNet18
 from data_loader import train_loader, val_loader
 from data_loader import train_dataset # For class weight calculation
 import config
@@ -26,12 +26,21 @@ weight_pneumonia = N_total / (2.0 * N_pneumonia)
 class_weights = torch.tensor([weight_normal, weight_pneumonia], dtype=torch.float32).to(device)
 ## End class weights application
 
+# Set model type
+model_type = config.MODEL
+
 # Initialize model, loss, and optimizer
-model = SimpleCNN().to(device)
-criterion = nn.CrossEntropyLoss(weight=class_weights)
-optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
+if model_type == "easy_CNN":
+    model = SimpleCNN().to(device)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    optimizer = optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
+elif model_type == 'ResNet18':
+    model = ResNet18().to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0.001)
 
 # Training loop
+print("Initialization success")
 for epoch in range(config.NUM_EPOCHS):
     model.train()
     running_loss = 0.0

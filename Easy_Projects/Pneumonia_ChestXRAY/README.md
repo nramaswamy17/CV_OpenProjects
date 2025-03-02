@@ -592,3 +592,6 @@ Foramt is (SimpleCNN -> ResNet18)
         - Weighted F1 (.71 -> .83)`
 
 Remarkable Improvement from SimpleCNN to ResNet18!!
+
+
+
